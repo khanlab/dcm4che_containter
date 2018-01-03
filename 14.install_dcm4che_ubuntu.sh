@@ -43,22 +43,22 @@ else
 fi
 
 #test installation
-source $PROFILE
-getscu -h >/dev/null
-if [ $? -eq 0 ]; then
-	echo "SUCCESS"
-	echo "To update PATH of current terminal: source $PFORFILE"
-	echo "To update PATH of all terminal: re-login"
-else
-    echo "FAIL."
-fi
+#source $PROFILE
+#getscu -h >/dev/null
+#if [ $? -eq 0 ]; then
+#	echo "SUCCESS"
+#	echo "To update PATH of current terminal: source $PFORFILE"
+#	echo "To update PATH of all terminal: re-login"
+#else
+#    echo "FAIL."
+#fi
 
 # this is a bash script
-LETSENCRYPT_CA_URL=https://letsencrypt.org/certs/letsencryptauthorityx3.pem.txt
-for f in $(find ${D_DIR}/etc -name cacerts.jks)
-do
-  keytool -noprompt -importcert -trustcacerts -alias letsencrypt -file <(wget -O - -o /dev/null ${LETSENCRYPT_CA_URL}) -keystore $f -storepass secret
-done
+#LETSENCRYPT_CA_URL=https://letsencrypt.org/certs/letsencryptauthorityx3.pem.txt
+#for f in $(find ${D_DIR}/etc -name cacerts.jks)
+#do
+#  keytool -noprompt -importcert -trustcacerts -alias letsencrypt -file <(wget -O - -o /dev/null ${LETSENCRYPT_CA_URL}) -keystore $f -storepass secret
+#done
 
 #use this command to test.
 #by StudyInstanceUID

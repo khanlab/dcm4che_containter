@@ -12,16 +12,40 @@ From: ubuntu:xenial
 #########
 cp ./*.sh $SINGULARITY_ROOTFS
 #ln -fs /usr/share/zoneinfo/US/Pacific-New /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
+mkdir -p $SINGULARITY_ROOTFS/opt/retrieve_cfmm
+cp ./retrieve_cfmm_tgz.py $SINGULARITY_ROOTFS/opt/retrieve_cfmm
 
 #########
 %post
 #########
 export DEBIAN_FRONTEND=noninteractive
+apt-get update && apt-get install -y --no-install-recommends apt-utils \
+    sudo \
+    git \
+    wget \
+    curl \
+    zip \
+    unzip \
+    python2.7 \
+    python-pip \
+    rsync \
+    openssh-client
 
+pip install -U pip setuptools
+
+#install pydicom
+mkdir /opt/pydicom
+cd /opt/pydicom
+git clone https://www.github.com/pydicom/pydicom.git
+cd pydicom
+python setup.py install
+
+
+#needed when install dcm4che
+apt-get install -y default-jre
+
+cd /
 bash 14.install_dcm4che_ubuntu.sh /opt
-
-#remove all install scripts
-#rm *.sh
 
 
 #########
@@ -41,3 +65,6 @@ export PATH=/opt/dcm4che-3.3.8/bin:$PATH
 #java.lang.OutOfMemoryError: unable to create new native thread
 
 export _JAVA_OPTIONS="-Xmx4048m"
+
+%runscript
+exec python /opt/retrieve_cfmm/retrieve_cfmm_tgz.py $@

@@ -35,7 +35,7 @@ import getpass
 
 #CFMM pacs 
 CONNECT='CFMM-Public@dicom.cfmm.robarts.ca:11112'
-PI_MATCHING_KEY='Khan*\Palaniyappan*\MacDonald*\Peters*\Gati*'
+PI_MATCHING_KEY='*'
 
 #UWO credentials: needed when login to dicom.cfmm.robarts.ca
 UWO_CREDNTIALS=os.path.join(expanduser("~"), '.uwo_credentials')
@@ -71,7 +71,7 @@ def get_NumberOfStudyRelatedInstances(CONNECT,matching_key,username,password):
           ' {}'.format(matching_key) +\
           ' -r 00201208'+\
           ' |grep -i NumberOfStudyRelatedInstances |cut -d[ -f 2|cut -d] -f 1 |sed "/^$/d"'
-          
+#    print(cmd) 
     instances_str = subprocess.check_output(cmd,stderr=FNULL, shell=True)
     return instances_str
 
@@ -108,7 +108,8 @@ def main(ssh_username,ssh_key_file,study_date):
         if pre == current: #transfer from scanner to pacs finished, ready for retrieve
             #procNewScan    
             #ssh -i ~akhan/.ssh/id_rsa_graham.sharcnet.ca akhanf@graham.sharcnet.ca /project/6007967/akhanf/cfmm-bids/src/bin/procNewScans `date +'%Y%m%d'`'
-            cmd="ssh -i {} {}@graham.sharcnet.ca /project/6007967/{}/autobids/bin/procNewScans {}".format(ssh_key_file,ssh_username,ssh_username,study_date)
+            cmd="ssh -i {} {}@{} {} {}".format(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date)
+#	    print(cmd)
             subprocess.check_output(cmd,shell=True)
         else:
             pass #do nothing, wait for the next cron task    
@@ -117,25 +118,21 @@ def main(ssh_username,ssh_key_file,study_date):
         sys.stdout.flush()
 
 if __name__=="__main__":
-    
-    if len(sys.argv) == 1:
-        ssh_username=getpass.getuser()
-        ssh_key_file="{}/.ssh/id_rsa_graham.sharcnet.ca".format(expanduser("~"))
+
+    if len(sys.argv) == 5:
+        ssh_username=sys.argv[1]
+        ssh_server=sys.argv[2]
+	ssh_key_file=sys.argv[3]
+        ssh_script=sys.argv[4]
         study_date=get_today_date()
-    elif len(sys.argv) == 2:
+    elif len(sys.argv) == 6:
         ssh_username=sys.argv[1]
-        ssh_key_file="~{}/.ssh/id_rsa_graham.sharcnet.ca".format(ssh_username)
-        study_date=get_today_date()    
-    elif len(sys.argv) == 3:
-        ssh_username=sys.argv[1]
-        ssh_key_file=sys.argv[2]
-        study_date=get_today_date()
-    elif len(sys.argv) == 4:
-        ssh_username=sys.argv[1]
-        ssh_key_file=sys.argv[2]
-        study_date=sys.argv[3]
+        ssh_server=sys.argv[2]
+	ssh_key_file=sys.argv[3]
+        ssh_script=sys.argv[4]
+        study_date=sys.argv[5]
     else:
-        print ("Usage: python " + os.path.basename(__file__)+ " [ssh_username_for_graham] [ssh_key_file_local] [date]")
+        print ("Usage: python " + os.path.basename(__file__)+ " [remote user] [remote server] [ssh key] [remote script path] [date (optional, default: today)]")
         print ("Example: python " + os.path.basename(__file__))
         print ("         python " + os.path.basename(__file__)+ " yinglilu")
         print ("         python " + os.path.basename(__file__)+ " yinglilu '/home/ylu/.ssh/id_rsa_graham.sharcnet.ca'")
@@ -152,8 +149,8 @@ if __name__=="__main__":
     # ssh_username='akhanf'
     # ssh_key_file="~akhan/id_rsa_graham.sharcnet.ca"
     
-    #matching_key= "-m StudyDescription='{}' -m StudyDate='{}'".format(PI_MATCHING_KEY,study_date)
-    #main(ssh_username,ssh_key_file,study_date)
+    matching_key= "-m StudyDescription='{}' -m StudyDate='{}'".format(PI_MATCHING_KEY,study_date)
+    main(ssh_username,ssh_key_file,study_date)
 
     #-----test code
     #test proNewScans

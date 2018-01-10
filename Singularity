@@ -13,7 +13,7 @@ From: ubuntu:xenial
 cp ./*.sh $SINGULARITY_ROOTFS
 #ln -fs /usr/share/zoneinfo/US/Pacific-New /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
 mkdir -p $SINGULARITY_ROOTFS/opt/retrieve_cfmm
-cp ./retrieve_cfmm_tgz.py $SINGULARITY_ROOTFS/opt/retrieve_cfmm
+cp ./*.py $SINGULARITY_ROOTFS/opt/retrieve_cfmm
 
 #########
 %post
@@ -58,6 +58,9 @@ export PATH=/opt/anaconda2/bin/:$PATH
 
 #dcm4che
 export PATH=/opt/dcm4che-3.3.8/bin:$PATH
+
+#python scripts
+export PATH=/opt/retrieve_cfmm:$PATH
 
 #########
 #fix error if run the image on graham:

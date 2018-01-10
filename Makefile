@@ -1,6 +1,6 @@
 ORG=khanlab
 NAME=retrieve_cfmm
-VERSION = 0.1
+VERSION = 0.2
 
 SINGULARITY_NAME=$(ORG)_$(NAME)_$(VERSION)
 

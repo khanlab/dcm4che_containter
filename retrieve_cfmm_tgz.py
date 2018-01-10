@@ -289,6 +289,7 @@ def main(uwo_username,
              keep_sorted_dest_dir_flag,
              tgz_dest_dir, 
              study_date,
+             patient_name,
              list_downloaded):
 
 
@@ -314,7 +315,8 @@ def main(uwo_username,
 
     #find StudyInstanceUID by matching key
     StudyInstanceUID_list=[]
-    matching_key= "-m StudyDescription='{}' -m StudyDate='{}'".format(PI_matching_key,study_date)
+    #matching_key= "-m StudyDescription='{}' -m StudyDate='{}'".format(PI_matching_key,study_date)
+    matching_key= "-m StudyDescription='{}' -m StudyDate='{}' -m PatientName='{}'".format(PI_matching_key,study_date,patient_name)
     StudyInstanceUID_list_one_study_date=find_StudyInstanceUID_by_matching_key(connect,matching_key,uwo_username,uwo_password)
     StudyInstanceUID_list.extend(StudyInstanceUID_list_one_study_date)
 
@@ -361,7 +363,7 @@ def main(uwo_username,
                 shutil.rmtree(sorted_dest_dir)
 
 if __name__=="__main__":
-    if len(sys.argv)-1 < 8:
+    if len(sys.argv)-1 < 9:
         print ("Usage: python " + os.path.basename(__file__)+ 
         "uwo_username, \
          uwo_password, \
@@ -383,8 +385,9 @@ if __name__=="__main__":
         keep_sorted_dicom_flag= (sys.argv[6]=='True')
         tgz_dest_dir=sys.argv[7]
         study_date=sys.argv[8]
-        if len(sys.argv)-1>8:
-            list_downloaded=sys.argv[9]
+        patient_name=sys.argv[9]
+        if len(sys.argv)-1>9:
+            list_downloaded=sys.argv[10]
         else:
             list_downloaded=0;
 
@@ -396,4 +399,5 @@ if __name__=="__main__":
              keep_sorted_dicom_flag,
              tgz_dest_dir, 
              study_date,
+	     patient_name,
              list_downloaded)

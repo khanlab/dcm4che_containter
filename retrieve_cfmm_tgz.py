@@ -15,6 +15,9 @@ import subprocess
 import shutil
 import time
 
+import pipes
+
+
 FNULL = open(os.devnull, 'w')
    
 #check PACS data completeness
@@ -54,7 +57,7 @@ def find_StudyInstanceUID_by_matching_key(connect,matching_key,username,password
     cmd_query_NumberOfStudyRelatedInstances = 'findscu'+\
           ' --bind  DEFAULT' +\
           ' --connect {}'.format(connect)+\
-          ' --tls-aes --user "{}" --user-pass "{}" '.format(username,password)+\
+          ' --tls-aes --user {} --user-pass {} '.format(pipes.quote(username),pipes.quote(password))+\
           ' {}'.format(matching_key) +\
           ' -r 00201208'+\
           ' |grep -i NumberOfStudyRelatedInstances |cut -d[ -f 2|cut -d] -f 1'
@@ -94,7 +97,7 @@ def find_StudyInstanceUID_by_matching_key(connect,matching_key,username,password
     cmd = 'findscu'+\
           ' --bind  DEFAULT' +\
           ' --connect {}'.format(connect)+\
-          ' --tls-aes --user "{}" --user-pass "{}" '.format(username,password)+\
+          ' --tls-aes --user {} --user-pass {} '.format(pipes.quote(username),pipes.quote(password))+\
           ' {}'.format(matching_key) +\
           ' -r StudyInstanceUID'+\
           ' |grep -i 0020,000D |cut -d[ -f 2 | cut -d] -f 1'  #grep StudyInstanceUID
@@ -140,7 +143,7 @@ def retrieve_by_key(connect,key_name,key_value,username,password,output_root_dir
     cmd = 'getscu' +\
         ' --bind  DEFAULT ' +\
         ' --connect {} '.format(connect) +\
-        ' --tls-aes --user "{}" --user-pass "{}" '.format(username,password) +\
+        ' --tls-aes --user {} --user-pass {} '.format(pipes.quote(username),pipes.quote(password))+\
         ' -m {}={}'.format(key_name,key_value) +\
         ' --directory {}'.format(output_dir) +\
         '>/dev/null'

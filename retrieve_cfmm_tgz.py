@@ -54,12 +54,18 @@ def find_StudyInstanceUID_by_matching_key(connect,matching_key,username,password
     cmd_query_NumberOfStudyRelatedInstances = 'findscu'+\
           ' --bind  DEFAULT' +\
           ' --connect {}'.format(connect)+\
-          ' --tls-aes --user {} --user-pass {} '.format(username,password)+\
+          ' --tls-aes --user "{}" --user-pass "{}" '.format(username,password)+\
           ' {}'.format(matching_key) +\
           ' -r 00201208'+\
           ' |grep -i NumberOfStudyRelatedInstances |cut -d[ -f 2|cut -d] -f 1'
 
-    pre = subprocess.check_output(cmd_query_NumberOfStudyRelatedInstances, shell=True)
+    
+    try:
+        pre = subprocess.check_output(cmd_query_NumberOfStudyRelatedInstances, shell=True)
+    except subprocess.CalledProcessError as e:
+        print 'findscu returned non-zero exit status'
+        
+    
     time_elapsed=0
     
     while time_elapsed<TIMEOUT_SEC:
@@ -68,7 +74,10 @@ def find_StudyInstanceUID_by_matching_key(connect,matching_key,username,password
         time_elapsed=time_elapsed+SLEEP_SEC
 
         #query again
-        current = subprocess.check_output(cmd_query_NumberOfStudyRelatedInstances, shell=True)
+        try:
+            current = subprocess.check_output(cmd_query_NumberOfStudyRelatedInstances, shell=True)
+        except subprocess.CalledProcessError as e:
+            print 'findscu returned non-zero exit status'
     
         if pre == current:
             break
@@ -92,17 +101,16 @@ def find_StudyInstanceUID_by_matching_key(connect,matching_key,username,password
 
     #debug
     #print matching_key
-    #print cmd
+    
     try:	
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,stderr=sys.stderr,shell=True)
         StudyInstanceUID_list, error = p.communicate()
         p.wait()
     except subprocess.CalledProcessError as e:
-        print 'findscu returned non-zero exit status 2'
+        print 'findscu returned non-zero exit status'
         return []
     
     return [x for x in StudyInstanceUID_list.splitlines() if x] #remove empty lines
-    
 
         
 def retrieve_by_key(connect,key_name,key_value,username,password,output_root_dir):
@@ -121,6 +129,9 @@ def retrieve_by_key(connect,key_name,key_value,username,password,output_root_dir
     '''   
     output_dir=os.path.join(output_root_dir,clean_path(key_value))
     
+    #debug
+    #print output_dir
+
     if not os.path.exists(output_dir):
         #print output_dir
         os.makedirs(output_dir)
@@ -129,15 +140,19 @@ def retrieve_by_key(connect,key_name,key_value,username,password,output_root_dir
     cmd = 'getscu' +\
         ' --bind  DEFAULT ' +\
         ' --connect {} '.format(connect) +\
-        ' --tls-aes --user {} --user-pass {} '.format(username,password) +\
+        ' --tls-aes --user "{}" --user-pass "{}" '.format(username,password) +\
         ' -m {}={}'.format(key_name,key_value) +\
-        ' --directory {}'.format(output_dir)+\
+        ' --directory {}'.format(output_dir) +\
         '>/dev/null'
 
     #debug    
     #print cmd
-    p = subprocess.Popen(cmd, stdout=sys.stdout,stderr=sys.stderr,shell=True)
-    p.wait()
+    try:
+        p = subprocess.Popen(cmd, stdout=sys.stdout,stderr=sys.stderr,shell=True)
+        p.wait()
+    except subprocess.CalledProcessError as e:
+        print 'get returned non-zero exit status'
+    
     
     return output_dir
     
@@ -368,15 +383,15 @@ def main(uwo_username,
 if __name__=="__main__":
     if len(sys.argv)-1 < 9:
         print ("Usage: python " + os.path.basename(__file__)+ 
-        "uwo_username, \
-         uwo_password, \
-         connect, \
-         PI_matching_key, \
-         sorted_dest_dir, \
-         keep_sorted_dicom_flag \
-         tgz_dest_dir, \
-         scan_date, \
-         list_downloaded_uids")
+        " uwo_username \
+          uwo_password \
+          connect \
+          PI_matching_key \
+          sorted_dest_dir \
+          keep_sorted_dicom_flag \
+          tgz_dest_dir \
+          scan_date \
+          list_downloaded_uids")
         sys.exit()
     else:
         
@@ -402,5 +417,5 @@ if __name__=="__main__":
              keep_sorted_dicom_flag,
              tgz_dest_dir, 
              study_date,
-	     patient_name,
+	        patient_name,
              list_downloaded)

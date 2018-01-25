@@ -85,7 +85,7 @@ def find_StudyInstanceUID_by_matching_key(connect,matching_key,username,password
     cmd = 'findscu'+\
           ' --bind  DEFAULT' +\
           ' --connect {}'.format(connect)+\
-          ' --tls-aes --user {} --user-pass {} '.format(username,password)+\
+          ' --tls-aes --user "{}" --user-pass "{}" '.format(username,password)+\
           ' {}'.format(matching_key) +\
           ' -r StudyInstanceUID'+\
           ' |grep -i 0020,000D |cut -d[ -f 2 | cut -d] -f 1'  #grep StudyInstanceUID
@@ -93,10 +93,13 @@ def find_StudyInstanceUID_by_matching_key(connect,matching_key,username,password
     #debug
     #print matching_key
     #print cmd
-
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE,stderr=sys.stderr,shell=True)
-    StudyInstanceUID_list, error = p.communicate()
-    p.wait()
+    try:	
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,stderr=sys.stderr,shell=True)
+        StudyInstanceUID_list, error = p.communicate()
+        p.wait()
+    except subprocess.CalledProcessError as e:
+        print 'findscu returned non-zero exit status 2'
+        return []
     
     return [x for x in StudyInstanceUID_list.splitlines() if x] #remove empty lines
     

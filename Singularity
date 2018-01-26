@@ -22,7 +22,11 @@ cp -Rv . $SINGULARITY_ROOTFS/src
 %post
 #########
 
-
+#needed for keytool
+if [ ! -e /dev/fd ]
+then
+ln -s /proc/self/fd /dev/fd
+fi
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get install -y --no-install-recommends apt-utils \
@@ -40,6 +44,7 @@ apt-get update && apt-get install -y --no-install-recommends apt-utils \
 pip install -U pip setuptools
 
 cd /src
+
 
 # checkout specific git release 
 SINGULARITY_TAG=${SINGULARITY_BUILDDEF#Singularity.}

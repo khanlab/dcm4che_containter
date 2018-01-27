@@ -82,7 +82,7 @@ export PATH=/opt/anaconda2/bin/:$PATH
 export PATH=/opt/dcm4che-3.3.8/bin:$PATH
 
 #python scripts
-export PATH=/opt/retrieve_cfmm:$PATH
+export PATH=/src:$PATH
 
 #########
 #fix error if run the image on graham:
@@ -92,4 +92,4 @@ export PATH=/opt/retrieve_cfmm:$PATH
 export _JAVA_OPTIONS="-Xmx4048m"
 
 %runscript
-exec python /src/retrieve_cfmm/retrieve_cfmm_tgz.py $@
+exec python /src/retrieve_cfmm_tgz.py $@

@@ -22,7 +22,11 @@ cp -Rv . $SINGULARITY_ROOTFS/src
 %post
 #########
 
-
+#needed for keytool
+if [ ! -e /dev/fd ]
+then
+ln -s /proc/self/fd /dev/fd
+fi
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get install -y --no-install-recommends apt-utils \
@@ -40,6 +44,7 @@ apt-get update && apt-get install -y --no-install-recommends apt-utils \
 pip install -U pip setuptools
 
 cd /src
+
 
 # checkout specific git release 
 SINGULARITY_TAG=${SINGULARITY_BUILDDEF#Singularity.}
@@ -77,7 +82,7 @@ export PATH=/opt/anaconda2/bin/:$PATH
 export PATH=/opt/dcm4che-3.3.8/bin:$PATH
 
 #python scripts
-export PATH=/opt/retrieve_cfmm:$PATH
+export PATH=/src:$PATH
 
 #########
 #fix error if run the image on graham:
@@ -87,4 +92,4 @@ export PATH=/opt/retrieve_cfmm:$PATH
 export _JAVA_OPTIONS="-Xmx4048m"
 
 %runscript
-exec python /src/retrieve_cfmm/retrieve_cfmm_tgz.py $@
+exec python /src/retrieve_cfmm_tgz.py $@

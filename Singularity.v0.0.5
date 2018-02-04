@@ -47,11 +47,11 @@ cd /src
 
 
 # checkout specific git release 
-SINGULARITY_TAG=${SINGULARITY_BUILDDEF#Singularity.}
-if [ ! "$SINGULARITY_TAG" = "Singularity" ]
-then
-  git checkout $SINGULARITY_TAG
-fi
+#SINGULARITY_TAG=${SINGULARITY_BUILDDEF#Singularity.}
+#if [ ! "$SINGULARITY_TAG" = "Singularity" ]
+#then
+#  git checkout $SINGULARITY_TAG
+#fi
 
 
 #install pydicom

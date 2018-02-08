@@ -145,6 +145,7 @@ def retrieve_by_key(connect,key_name,key_value,username,password,output_root_dir
     cmd = 'getscu' +\
         ' --bind  DEFAULT ' +\
         ' --connect {} '.format(connect) +\
+        ' --accept-timeout 10000 '+\
         ' --tls-aes --user {} --user-pass {} '.format(pipes.quote(username),pipes.quote(password))+\
         ' -m {}={}'.format(key_name,key_value) +\
         ' --directory {}'.format(output_dir) +\

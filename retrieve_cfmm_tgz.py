@@ -57,6 +57,7 @@ def find_StudyInstanceUID_by_matching_key(connect,matching_key,username,password
     cmd_query_NumberOfStudyRelatedInstances = 'findscu'+\
           ' --bind  DEFAULT' +\
           ' --connect {}'.format(connect)+\
+          ' --accept-timeout 10000 '+\
           ' --tls-aes --user {} --user-pass {} '.format(pipes.quote(username),pipes.quote(password))+\
           ' {}'.format(matching_key) +\
           ' -r 00201208'+\
@@ -97,6 +98,7 @@ def find_StudyInstanceUID_by_matching_key(connect,matching_key,username,password
     cmd = 'findscu'+\
           ' --bind  DEFAULT' +\
           ' --connect {}'.format(connect)+\
+          ' --accept-timeout 10000 '+\
           ' --tls-aes --user {} --user-pass {} '.format(pipes.quote(username),pipes.quote(password))+\
           ' {}'.format(matching_key) +\
           ' -r StudyInstanceUID'+\

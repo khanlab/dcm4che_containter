@@ -67,6 +67,7 @@ def get_NumberOfStudyRelatedInstances(CONNECT,matching_key,username,password):
     cmd = 'docker run --rm yinglilu/dcm4che:0.1 findscu'+\
           ' --bind  DEFAULT' +\
           ' --connect {}'.format(CONNECT)+\
+          ' --accept-timeout 10000 '+\
           ' --tls-aes --user {} --user-pass {} '.format(username,password)+\
           ' {}'.format(matching_key) +\
           ' -r 00201208'+\

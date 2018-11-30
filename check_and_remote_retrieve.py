@@ -37,8 +37,6 @@ import getpass
 CONNECT='CFMM-Public@dicom.cfmm.robarts.ca:11112'
 PI_MATCHING_KEY='*'
 
-#UWO credentials: needed when login to dicom.cfmm.robarts.ca
-UWO_CREDNTIALS=os.path.join(expanduser("~"), '.uwo_credentials')
 
 SLEEP_SEC=30 #interval checking PACS data completeness 
 FNULL = open(os.devnull, 'w')
@@ -103,19 +101,23 @@ def have_new_scan_and_ready_for_retrieve(uwo_username,uwo_password,study_date):
         sys.stdout.flush()
         return False
 
-def main(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date):
+def main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date):
     
     '''
     check today's new-scan completeness(all dicoms has been sent to dicom server from scanner) on CFMM PACS and
     triger the retriving/converting/processing(on graham)
 
     '''
+
+    uwo_cred_file=os.path.join(expanduser("~"), ".uwo_credentials.{}".format(uwo_cred_id))
+
     #read uwo username and password(needed to login cfmm dicom server)
-    if not os.path.exists(UWO_CREDNTIALS):
-        print "need file: {}".format(UWO_CREDNTIALS)
+
+    if not os.path.exists(uwo_cred_file):
+        print "credential file {} does not exist, failing..".format(uwo_cred_file)
         sys.exit(1)
 
-    with open(UWO_CREDNTIALS) as f:
+    with open(uwo_cred_file) as f:
         #lines = f.readlines() #with '\n'
         lines=f.read().splitlines() #without '\n'
         
@@ -124,7 +126,7 @@ def main(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date):
 
     #triger the retriving/converting/processing(on graham) if has todday's new scan and ready for retrieve
     if have_new_scan_and_ready_for_retrieve(uwo_username,uwo_password,study_date):
-        cmd="ssh -i {} {}@{} {} {}".format(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date)
+        cmd="ssh -i {} {}@{} {} {} {}".format(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date,uwo_cred_id)
         try:
             stdout_stderr = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             print stdout_stderr
@@ -134,25 +136,27 @@ def main(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date):
     
 if __name__=="__main__":
 
-    if len(sys.argv) == 5:
+    if len(sys.argv) == 6:
         ssh_username=sys.argv[1]
         ssh_server=sys.argv[2]
-        ssh_key_file=sys.argv[3]
-        ssh_script=sys.argv[4]
+	ssh_key_file=sys.argv[3]
+	uwo_cred_id=sys.argv[4]
+        ssh_script=sys.argv[5]
         study_date=get_today_date()
     elif len(sys.argv) == 6:
         ssh_username=sys.argv[1]
         ssh_server=sys.argv[2]
-        ssh_key_file=sys.argv[3]
-        ssh_script=sys.argv[4]
-        study_date=sys.argv[5]
+	ssh_key_file=sys.argv[3]
+	uwo_cred_id=sys.argv[4]
+        ssh_script=sys.argv[5]
+        study_date=sys.argv[6]
     else:
-        print ("Usage: python " + os.path.basename(__file__)+ " <remote user> <remote server> <ssh key> <remote script path> [date (optional, default: today)]")
+        print ("Usage: python " + os.path.basename(__file__)+ " <remote user> <remote server> <ssh key> < uwo credential id > <remote script path>  [date (optional, default: today)]")
         print ("Example: python check_and_remote_retrieve.py yinglilu graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca /project/6007967/yinglilu/autobids/bin/procNewScans 20171116")
         sys.exit(1)
 
     
-    main(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date)
+    main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
  
     ##info for test
 
@@ -171,9 +175,9 @@ if __name__=="__main__":
     ##test script
 
     #20171116 's scan
-    #python check_and_remote_retrieve.py yinglilu graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca /project/6007967/yinglilu/autobids/bin/procNewScans 20171116
+    #python check_and_remote_retrieve.py yinglilu graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca default /project/6007967/yinglilu/autobids/bin/procNewScans 20171116
 
-    #today's new scan
-    #python check_and_remote_retrieve.py yinglilu graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca /project/6007967/yinglilu/autobids/bin/procNewScans
+    #today's new scan - using ~/.uwo_credentials.bd 
+    #python check_and_remote_retrieve.py yinglilu graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca bd /project/6007967/yinglilu/autobids/bin/procNewScans
 
 

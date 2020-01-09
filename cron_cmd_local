@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$#" -lt 1 ]
+then
+    date=$(date +'%Y%m%d')
+else
+    date=$1
+fi
+
+execpath=`dirname $0`
+execpath=`realpath $execpath`
+
+cred=ak
+study_desc='Khan^NeuroAnalytics'
+pi=${study_desc%%^*}
+
+
+if $execpath/check_and_local_retrieve.sh $cred $study_desc $date
+then
+  echo procNewScans $date $cred $pi
+   procNewScans $date $cred $pi
+else
+  echo skip procNewscans
+fi
+ 
+

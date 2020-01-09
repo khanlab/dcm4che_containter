@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ "$#" = 1 ]
+then
+	date=$1
+else
+	date=""
+fi	
+	/home/akhan/retrieve_cfmm/check_and_remote_retrieve.py switt4 graham.sharcnet.ca ~/.ssh/id_rsa_graham_switt4.sharcnet.ca bd /project/6007967/switt4/autobids-pub/bin/procNewScans $date |&  /usr/bin/logger -t "retrieve_cfm_bidsdump"

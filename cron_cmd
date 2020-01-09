@@ -1,8 +1,13 @@
 #!/bin/bash
 
+if [ "$#" = 1 ]
+then
+	date=$1
+else
+	date=""
+fi	
 
-/home/akhan/retrieve_cfmm/check_and_remote_retrieve.py akhanf graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca ak /project/6007967/akhanf/autobids-cfmm/bin/procNewScans 2>&1 1>/dev/null | /usr/bin/logger -t "retrieve_cfmm"
+/home/akhan/retrieve_cfmm/check_and_remote_retrieve.py akhanf graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca ak /project/6007967/akhanf/autobids-cfmm/bin/procNewScans $date |& /usr/bin/logger -t "retrieve_cfmm_akhan488"
 
-sleep 300
 
-/home/akhan/retrieve_cfmm/check_and_remote_retrieve.py akhanf graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca bd /project/6007967/akhanf/autobids-cfmm/bin/procNewScans 2>&1 1>/dev/null | /usr/bin/logger -t "retrieve_cfmm"
+

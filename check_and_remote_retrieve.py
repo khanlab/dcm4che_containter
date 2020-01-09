@@ -89,6 +89,11 @@ def have_new_scan_and_ready_for_retrieve(uwo_username,uwo_password,study_date):
     #get NumberOfStudyRelatedInstances
     matching_key= "-m StudyDescription='{}' -m StudyDate='{}'".format(PI_MATCHING_KEY,study_date)
     pre = get_NumberOfStudyRelatedInstances(uwo_username,uwo_password,matching_key)
+    
+
+    #print "matching key: {}".format(matching_key)
+    #print "number of study related instances: {}".format(pre)
+
     if pre: #if not empty, means found today's study on PACS
         time.sleep(SLEEP_SEC)
         current = get_NumberOfStudyRelatedInstances(uwo_username,uwo_password,matching_key)
@@ -111,6 +116,7 @@ def main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
 
     uwo_cred_file=os.path.join(expanduser("~"), ".uwo_credentials.{}".format(uwo_cred_id))
 
+    #print "using cred file {}".format(uwo_cred_file)
     #read uwo username and password(needed to login cfmm dicom server)
 
     if not os.path.exists(uwo_cred_file):
@@ -127,6 +133,7 @@ def main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
     #triger the retriving/converting/processing(on graham) if has todday's new scan and ready for retrieve
     if have_new_scan_and_ready_for_retrieve(uwo_username,uwo_password,study_date):
         cmd="ssh -i {} {}@{} {} {} {}".format(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date,uwo_cred_id)
+        #print cmd
         try:
             stdout_stderr = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             print stdout_stderr
@@ -136,6 +143,7 @@ def main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
     
 if __name__=="__main__":
 
+    #print ("number of args is {}".format(len(sys.argv)))
     if len(sys.argv) == 6:
         ssh_username=sys.argv[1]
         ssh_server=sys.argv[2]
@@ -143,7 +151,7 @@ if __name__=="__main__":
 	uwo_cred_id=sys.argv[4]
         ssh_script=sys.argv[5]
         study_date=get_today_date()
-    elif len(sys.argv) == 6:
+    elif len(sys.argv) == 7:
         ssh_username=sys.argv[1]
         ssh_server=sys.argv[2]
 	ssh_key_file=sys.argv[3]

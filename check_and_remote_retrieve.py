@@ -138,7 +138,6 @@ def main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
     #########
     echoscu_cmd = 'docker run --rm yinglilu/dcm4che:0.1 storescu'+\
           ' --connect {}'.format(CONNECT)+\
-          ' --accept-timeout 10000 '+\
           ' --tls-aes --user {} --user-pass {} '.format(username,password)
 
     sleep_mins = 20 #<-change this for retry interval (note: minutes)

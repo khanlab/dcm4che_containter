@@ -132,7 +132,30 @@ def main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
 
     #triger the retriving/converting/processing(on graham) if has todday's new scan and ready for retrieve
   #  if have_new_scan_and_ready_for_retrieve(uwo_username,uwo_password,study_date):
-        
+
+    #########
+    #retry if server unreachable
+    #########
+    echoscu_cmd = 'docker run --rm yinglilu/dcm4che:0.1 storescu'+\
+          ' --connect {}'.format(CONNECT)+\
+          ' --accept-timeout 10000 '+\
+          ' --tls-aes --user {} --user-pass {} '.format(username,password)
+
+    sleep_mins = 20 #<-change this for retry interval (note: minutes)
+    maximum_retry_hours = 20 # <- change this for retry hours
+    maximum_retry_count = maximum_retry_hours * (60/sleep_mins)
+    for i in range(1,maximum_retry_count+1):
+        return_code = os.system(echoscu_cmd)
+
+        if (return_code == 0): #if server recovered
+            break
+        else:
+            time.sleep(sleep_mins*60)
+    
+    if return_code != 0:
+        print 'server unreachable!'
+        return
+
     cmd="ssh -i {} {}@{} {} {} {}".format(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date,uwo_cred_id)
     #print cmd
     try:

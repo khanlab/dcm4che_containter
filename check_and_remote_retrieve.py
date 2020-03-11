@@ -131,14 +131,15 @@ def main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
     uwo_password=lines[1]
 
     #triger the retriving/converting/processing(on graham) if has todday's new scan and ready for retrieve
-    if have_new_scan_and_ready_for_retrieve(uwo_username,uwo_password,study_date):
-        cmd="ssh -i {} {}@{} {} {} {}".format(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date,uwo_cred_id)
-        #print cmd
-        try:
-            stdout_stderr = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-            print stdout_stderr
-        except subprocess.CalledProcessError as e:
-            print 'findscu returned non-zero exit status'
+  #  if have_new_scan_and_ready_for_retrieve(uwo_username,uwo_password,study_date):
+        
+    cmd="ssh -i {} {}@{} {} {} {}".format(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date,uwo_cred_id)
+    #print cmd
+    try:
+        stdout_stderr = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+        print stdout_stderr
+    except subprocess.CalledProcessError as e:
+        print 'findscu returned non-zero exit status'
             
     
 if __name__=="__main__":

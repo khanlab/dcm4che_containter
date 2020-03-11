@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+/home/akhan/retrieve_cfmm/check_and_remote_retrieve.py akhanf cedar.computecanada.ca ~/.ssh/id_rsa_cedar ak /home/akhanf/autobids-cfmm/bin/procNewScans 2>&1 1>/dev/null | /usr/bin/logger -t "retrieve_cfmm"
+
+sleep 300
+
+/home/akhan/retrieve_cfmm/check_and_remote_retrieve.py akhanf cedar.computecanada.ca ~/.ssh/id_rsa_cedar bd /home/akhanf/autobids-cfmm/bin/procNewScans 2>&1 1>/dev/null | /usr/bin/logger -t "retrieve_cfmm"

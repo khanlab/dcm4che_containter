@@ -1,0 +1,168 @@
+#!/usr/bin/env python
+'''
+script to check today's new-scan completeness on CFMM PACS and triger the retriving/converting/processing(on graham)
+
+This script will be run as a cron job:
+*/5 * * * * /usr/bin/python /usr/local/bin/retrieve_cfmm_from_sharcnet_cloud.py yinglilu '~/.ssh/id_rsa_graham.sharcnet.ca' 2>&1 1>/dev/null | /usr/bin/logger -t "retrieve_cfmm"
+
+algorithm:
+    every 5 mins:
+        pre=get PI+Today's NumberOfStudyRelatedInstances
+            is pre not empty: (means there is today's new scan)
+                wait 20-30 seconds
+                current = get PI+Today's NumberOfStudyRelatedInstances
+                if pre==current (means transfers from scanner to pacs finished!, can trigger retriving/converting/processing(on graham))
+                    /usr/bin/ssh -i ~akhan/.ssh/id_rsa_graham.sharcnet.ca akhanf@graham.sharcnet.ca /project/6007967/akhanf/cfmm-bids/src/bin/procNewScans `date +'%Y%m%d'`
+                    (which will retrive all today's scans, then submit jobs to convert/process)
+
+note: findscu is dcm4che's! not dcmtk's!!
+      need docker image: yinglilu/dcm4che
+      (docker pull yinglilu/dcm4che:0.1)
+
+Author: YingLi Lu
+Email: yinglilu@gmail.com
+Date: 2018-01-03
+python:2.7.13
+'''
+
+import os
+import sys
+import datetime
+import subprocess
+from os.path import expanduser
+import time
+import getpass
+
+#CFMM pacs 
+CONNECT='CFMM-Public@dicom.cfmm.robarts.ca:11112'
+PI_MATCHING_KEY='*'
+
+#UWO credentials: needed when login to dicom.cfmm.robarts.ca
+#uwo_cred_file=os.path.join(expanduser("~"), '.uwo_credentials')
+
+SLEEP_SEC=30 #interval checking PACS data completeness 
+FNULL = open(os.devnull, 'w')
+
+def get_today_date():
+    now = datetime.datetime.now()
+    return now.strftime("%Y%m%d")
+
+def get_NumberOfStudyRelatedInstances(CONNECT,matching_key,username,password):
+    '''
+    find StudyInstanceUID[s] by matching key
+
+    input:
+        connnect: PACS server info, for instance, 'CFMM-Public@dicom.cfmm.robarts.ca:11112'
+        matching_key: -m StudyDescription='Khan*' -m StudyDate='20171116'
+        username: UWO's username to access CFMM's PACS
+        password: UWO's password to access CFMM's PACS
+
+    output:string
+        StudyInstanceUID1\n
+        StudyInstanceUID2\n
+        ...
+    '''
+
+    #check PACS server data completeness 
+    cmd = 'docker run --rm yinglilu/dcm4che:0.1 findscu'+\
+          ' --bind  DEFAULT' +\
+          ' --connect {}'.format(CONNECT)+\
+          ' --accept-timeout 10000 '+\
+          ' --tls-aes --user {} --user-pass {} '.format(username,password)+\
+          ' {}'.format(matching_key) +\
+          ' -r 00201208'+\
+          ' |grep -i NumberOfStudyRelatedInstances |cut -d[ -f 2|cut -d] -f 1 |sed "/^$/d"'
+#    print(cmd) 
+    instances_str = subprocess.check_output(cmd,stderr=FNULL, shell=True)
+    return instances_str
+
+def main(ssh_username,ssh_key_file,uwo_cred_id,study_date):
+    '''
+    check today's new-scan completeness on CFMM PACS and triger the retriving/converting/processing(on graham)
+
+    pre=get PI+Today's NumberOfStudyRelatedInstances
+    is pre not empty:
+        wait 20-30 seconds
+        current = get PI+Today's NumberOfStudyRelatedInstances
+        if pre==current (means transfer from scanner to pacs finished!)
+            procScanNew
+    '''
+        
+    uwo_cred_file=os.path.join(expanduser("~"), ".uwo_credentials.{}".format(uwo_cred_id))
+
+    #read uwo username and password(needed to login cfmm dicom server)
+    if not os.path.exists(uwo_cred_file):
+        print "need file: {}".format(uwo_cred_file)
+        sys.exit(1)
+
+    with open(uwo_cred_file) as f:
+        #lines = f.readlines() #with '\n'
+        lines=f.read().splitlines() #without '\n'
+        
+    uwo_username=lines[0]
+    uwo_password=lines[1]
+
+    #get NumberOfStudyRelatedInstances
+    pre = get_NumberOfStudyRelatedInstances(CONNECT,matching_key,uwo_username,uwo_password)
+
+    if pre: #if not empty, means found today's study on PACS
+        time.sleep(SLEEP_SEC)
+        current = get_NumberOfStudyRelatedInstances(CONNECT,matching_key,uwo_username,uwo_password)
+        if pre == current: #transfer from scanner to pacs finished, ready for retrieve
+            #procNewScan    
+            #ssh -i ~akhan/.ssh/id_rsa_graham.sharcnet.ca akhanf@graham.sharcnet.ca /project/6007967/akhanf/cfmm-bids/src/bin/procNewScans `date +'%Y%m%d'`'
+            cmd="ssh -i {} {}@{} {} {} {}".format(ssh_key_file,ssh_username,ssh_server,ssh_script,study_date,uwo_cred_id)
+	    print(cmd)
+	
+            subprocess.check_output(cmd,shell=True)
+        else:
+            pass #do nothing, wait for the next cron task    
+    else:
+        sys.stdout.writelines('no new data to retrieve!\n')
+        sys.stdout.flush()
+
+if __name__=="__main__":
+
+    if len(sys.argv) == 6:
+        ssh_username=sys.argv[1]
+        ssh_server=sys.argv[2]
+	ssh_key_file=sys.argv[3]
+	uwo_cred_id=sys.argv[4]
+        ssh_script=sys.argv[5]
+        study_date=get_today_date()
+    elif len(sys.argv) == 6:
+        ssh_username=sys.argv[1]
+        ssh_server=sys.argv[2]
+	ssh_key_file=sys.argv[3]
+	uwo_cred_id=sys.argv[4]
+        ssh_script=sys.argv[5]
+        study_date=sys.argv[6]
+    else:
+        print ("Usage: python " + os.path.basename(__file__)+ " [remote user] [remote server] [ssh key] [uwo credential id]  [remote script path] [date (optional, default: today)]")
+        print ("Example: python " + os.path.basename(__file__))
+        print ("         python " + os.path.basename(__file__)+ " yinglilu")
+        print ("         python " + os.path.basename(__file__)+ " yinglilu '/home/ylu/.ssh/id_rsa_graham.sharcnet.ca'")
+        print ("         python " + os.path.basename(__file__)+ " yinglilu '/home/ylu/.ssh/id_rsa_graham.sharcnet.ca' 20171116")
+        sys.exit(1)
+
+    print ssh_username,ssh_key_file,study_date
+
+    # #yingli's
+    # ssh_username='yinglilu'
+    # ssh_key_file="~/.ssh/id_rsa_graham.sharcnet.ca"
+
+    # #ali's
+    # ssh_username='akhanf'
+    # ssh_key_file="~akhan/id_rsa_graham.sharcnet.ca"
+    
+    matching_key= "-m StudyDescription='{}' -m StudyDate='{}'".format(PI_MATCHING_KEY,study_date)
+    main(ssh_username,ssh_key_file,uwo_cred_id,study_date)
+
+    #-----test code
+    #test proNewScans
+    #ssh -i ~/.ssh/id_rsa_graham.sharcnet.ca yinglilu@graham.sharcnet.ca /project/6007967/yinglilu/autobids/bin/procNewScans 20171116
+
+    #test script
+    #python retrieve_cfmm_from_sharcnet_cloud.py yinglilu '~/.ssh/id_rsa_graham.sharcnet.ca' 20171116
+
+

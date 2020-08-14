@@ -138,7 +138,7 @@ def main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
     #########
     echoscu_cmd = 'docker run --rm yinglilu/dcm4che:0.1 storescu'+\
           ' --connect {}'.format(CONNECT)+\
-          ' --tls-aes --user {} --user-pass {} '.format(username,password)
+          ' --tls-aes --user {} --user-pass {} '.format(uwo_username,uwo_password)
 
     sleep_mins = 20 #<-change this for retry interval (note: minutes)
     maximum_retry_hours = 20 # <- change this for retry hours
@@ -186,9 +186,7 @@ if __name__=="__main__":
         print ("Example: python check_and_remote_retrieve.py yinglilu graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca /project/6007967/yinglilu/autobids/bin/procNewScans 20171116")
         sys.exit(1)
 
-    
     main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
- 
     ##info for test
 
     # #yingli's

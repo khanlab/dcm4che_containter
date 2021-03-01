@@ -7,7 +7,7 @@ else
 	date=""
 fi	
 
-/home/akhan/retrieve_cfmm/check_and_remote_retrieve.py akhanf graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca ak /project/6007967/akhanf/autobids-cfmm/bin/procNewScans $date |& /usr/bin/logger -t "retrieve_cfmm_akhan488" -s
+/home/akhan/retrieve_cfmm/check_and_remote_retrieve.py akhanf graham.sharcnet.ca ~/.ssh/id_rsa_graham.sharcnet.ca ak /project/ctb-akhanf/akhanf/autobids/bin/procNewScans $date |& /usr/bin/logger -t "retrieve_cfmm_akhan488" -s
 
 
 

@@ -20,7 +20,7 @@ algorithm:
 
 note: findscu is dcm4che's! not dcmtk's!!
       need docker image: yinglilu/dcm4che
-      (docker pull yinglilu/dcm4che:0.1)
+      (docker pull khanlab/cfmm2tar:v0.0.2)
 
 python:2.7.13
 '''
@@ -61,7 +61,7 @@ def get_NumberOfStudyRelatedInstances(username,password,matching_key):
     '''
 
     #check PACS server data completeness 
-    cmd = 'docker run --rm yinglilu/dcm4che:0.1 findscu'+\
+    cmd = 'docker run --rm khanlab/cfmm2tar:v0.0.2 findscu'+\
           ' --bind  DEFAULT' +\
           ' --connect {}'.format(CONNECT)+\
           ' --accept-timeout 10000 '+\
@@ -136,7 +136,7 @@ def main(ssh_key_file,ssh_username,uwo_cred_id,ssh_server,ssh_script,study_date)
     #########
     #retry if server unreachable
     #########
-    echoscu_cmd = 'docker run --rm yinglilu/dcm4che:0.1 storescu'+\
+    echoscu_cmd = 'docker run --rm khanlab/cfmm2tar:v0.0.2 storescu'+\
           ' --connect {}'.format(CONNECT)+\
           ' --tls-aes --user {} --user-pass {} '.format(uwo_username,uwo_password)
 
